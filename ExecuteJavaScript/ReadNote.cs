@@ -41,6 +41,7 @@ Persist Security Info=False;";
             string Competencia = "";
             string CODVerificacao = "";
             string CNPJTomador = "";
+            string RazaoSocialNome = "";
             string CIA = "";
 
 
@@ -72,8 +73,7 @@ Persist Security Info=False;";
 
             try //Try Discriminacao
             {
-                dis = doc.DocumentNode.SelectSingleNode("//span[starts-with(@style,'position:absolute;left:12px;top:335px;')]").SelectSingleNode(".//*").InnerHtml;
-
+                dis = doc.DocumentNode.SelectSingleNode("//span[starts-with(@style,'position:absolute;left:12px;top:335px;')]").SelectSingleNode(".//*").InnerHtml.Replace("<br>"," ").Replace("'","''");
                 Console.WriteLine("Discriminacao: " + dis);
             }
             catch (Exception)
@@ -103,8 +103,17 @@ Persist Security Info=False;";
             }
             catch (Exception)
             {
-                valorliquido = "Não possui valor liquido";
-                Console.WriteLine("Não possui valor liquido");
+                try
+                {
+                    valorliquido = doc.DocumentNode.SelectSingleNode("//span[starts-with(@style,'position:absolute;left:135px;top:725px;')]").SelectSingleNode(".//*").InnerHtml;
+                    Console.WriteLine("Valor liquido: " + valorliquido);
+                }
+                catch (Exception)
+                {
+                    valorliquido = "Não possui valor liquido";
+                    Console.WriteLine("Não possui valor liquido");
+                }
+                
             }
 
             try //Try Valor Servico
@@ -115,8 +124,17 @@ Persist Security Info=False;";
             }
             catch (Exception)
             {
-                valorservico = "Não possui valor do servico";
-                Console.WriteLine("Não possui valor do servico");
+                try
+                {
+                    valorservico = doc.DocumentNode.SelectSingleNode("//span[starts-with(@style,'position:absolute;left:135px;top:605px;')]").SelectSingleNode(".//*").InnerHtml;
+                    Console.WriteLine("Valor Servico: " + valorservico);
+                }
+                catch (Exception)
+                {
+                    valorservico = "Não possui valor do servico";
+                    Console.WriteLine("Não possui valor do servico");
+                }
+                
             }
 
             try //Try ISSQN Retido
@@ -127,8 +145,17 @@ Persist Security Info=False;";
             }
             catch (Exception)
             {
-                ISSQNRetido = "Nao possui ISSQN Retido";
-                Console.WriteLine("Não possui ISSQN Retido");
+                try
+                {
+                    ISSQNRetido = doc.DocumentNode.SelectSingleNode("//span[starts-with(@style,'position:absolute;left:135px;top:705px;')]").SelectSingleNode(".//*").InnerHtml;
+                    Console.WriteLine("ISSQN Retido: " + ISSQNRetido);
+                }
+                catch (Exception)
+                {
+                    ISSQNRetido = "Nao possui ISSQN Retido";
+                    Console.WriteLine("Não possui ISSQN Retido");
+                }
+                
             }
 
             try //Try Codigo do Servico
@@ -141,8 +168,19 @@ Persist Security Info=False;";
             }
             catch (Exception)
             {
-                CODServico = "Nao possui Codigo do Servico";
-                Console.WriteLine("Não possui Codigo do Servico");
+                try
+                {
+                    CODServico = doc.DocumentNode.SelectSingleNode("//span[starts-with(@style,'position:absolute;left:12px;top:485px;')]").SelectSingleNode(".//*").InnerHtml;
+                    int indexEnd = CODServico.IndexOf("-");
+                    CODServico = CODServico.Substring(0, indexEnd - 1);
+                    Console.WriteLine("Codigo do Servico: " + CODServico);
+                }
+                catch (Exception)
+                {
+                    CODServico = "Nao possui Codigo do Servico";
+                    Console.WriteLine("Não possui Codigo do Servico");
+                }
+                
             }
 
             try //Try NFe Substituido
@@ -205,6 +243,18 @@ Persist Security Info=False;";
                 Console.WriteLine("Não possui CNPJ Tomador");
             }
 
+            try //Try CNPJ do RazaoSocialNome
+            {
+                RazaoSocialNome = doc.DocumentNode.SelectSingleNode("//span[starts-with(@style,'position:absolute;left:175px;top:142px;')]").SelectSingleNode(".//*").InnerHtml;
+                Console.WriteLine("Razao Social Nome: " + RazaoSocialNome);
+
+            }
+            catch (Exception)
+            {
+                RazaoSocialNome = "Nao possui Razao Social Nome";
+                Console.WriteLine("Não possui Razao Social Nome");
+            }
+
             if (CNPJPrestador == "04.335.535/0002-55")  //Insert BD SuperTerminais Table
             {
                 SuperTerminais superterminais = new SuperTerminais(dis, nfe);
@@ -217,14 +267,15 @@ Persist Security Info=False;";
                         connection.Open();
                         OleDbCommand command = new OleDbCommand();
                         command.Connection = connection;
-                        query = "insert into Notas (NFe, RPS , DiscriminacaodoServico , ValorLiquido , ValorServico , ISSQNRetino , CODServico , NFeSub , DataHoraEmissao , Competencia , CODVerificacao , CNPJPrestador , CNPJTomador) values ('" + nfe + "','" + rps + "','" + dis + "','" + valorliquido + "','" + valorservico + "','" + ISSQNRetido + "','" + CODServico + "','" + NFeSub + "','" + DataHoraEmissao + "','" + Competencia + "','" + CODVerificacao + "','" + CNPJPrestador + "','" + CNPJTomador + "')";
+                        query = "insert into Notas (NFe, RPS , DiscriminacaodoServico , ValorLiquido , ValorServico , ISSQNRetino , CODServico , NFeSub , DataHoraEmissao , Competencia , CODVerificacao , CNPJPrestador , CNPJTomador , RazaoSocialNome) values ('" + nfe + "','" + rps + "','" + dis + "','" + valorliquido + "','" + valorservico + "','" + ISSQNRetido + "','" + CODServico + "','" + NFeSub + "','" + DataHoraEmissao + "','" + Competencia + "','" + CODVerificacao + "','" + CNPJPrestador + "','" + CNPJTomador + "','" + RazaoSocialNome + "')";
                         command.CommandText = query;
                         command.ExecuteNonQuery();
                         connection.Close();
                     }
-                    catch (Exception)
+                    catch (Exception err)
                     {
                         connection.Close();
+                        Console.WriteLine(nfe + " - " + err.Message);
                         goto InsertSuperTerminais;
                     }
                     
@@ -247,14 +298,15 @@ Persist Security Info=False;";
                         connection.Open();
                         OleDbCommand command = new OleDbCommand();
                         command.Connection = connection;
-                        query = "insert into Notas (NFe, RPS , DiscriminacaodoServico , ValorLiquido , ValorServico , ISSQNRetino , CODServico , NFeSub , DataHoraEmissao , Competencia , CODVerificacao , CNPJPrestador , CNPJTomador) values ('" + nfe + "','" + rps + "','" + dis + "','" + valorliquido + "','" + valorservico + "','" + ISSQNRetido + "','" + CODServico + "','" + NFeSub + "','" + DataHoraEmissao + "','" + Competencia + "','" + CODVerificacao + "','" + CNPJPrestador + "','" + CNPJTomador + "')";
+                        query = "insert into Notas (NFe, RPS , DiscriminacaodoServico , ValorLiquido , ValorServico , ISSQNRetino , CODServico , NFeSub , DataHoraEmissao , Competencia , CODVerificacao , CNPJPrestador , CNPJTomador , RazaoSocialNome) values ('" + nfe + "','" + rps + "','" + dis + "','" + valorliquido + "','" + valorservico + "','" + ISSQNRetido + "','" + CODServico + "','" + NFeSub + "','" + DataHoraEmissao + "','" + Competencia + "','" + CODVerificacao + "','" + CNPJPrestador + "','" + CNPJTomador + "','" + RazaoSocialNome + "')";
                         command.CommandText = query;
                         command.ExecuteNonQuery();
                         connection.Close();
                     }
-                    catch (Exception)
+                    catch (Exception err)
                     {
                         connection.Close();
+                        Console.WriteLine(nfe + " - " + err.Message);
                         goto InsertAurora;
                     }
                     
@@ -278,14 +330,15 @@ Persist Security Info=False;";
                         connection.Open();
                         OleDbCommand command = new OleDbCommand();
                         command.Connection = connection;
-                        query = "insert into Notas (NFe, RPS , DiscriminacaodoServico , ValorLiquido , ValorServico , ISSQNRetino , CODServico , NFeSub , DataHoraEmissao , Competencia , CODVerificacao , CNPJPrestador , CNPJTomador) values ('" + nfe + "','" + rps + "','" + dis + "','" + valorliquido + "','" + valorservico + "','" + ISSQNRetido + "','" + CODServico + "','" + NFeSub + "','" + DataHoraEmissao + "','" + Competencia + "','" + CODVerificacao + "','" + CNPJPrestador + "','" + CNPJTomador + "')";
+                        query = "insert into Notas (NFe, RPS , DiscriminacaodoServico , ValorLiquido , ValorServico , ISSQNRetino , CODServico , NFeSub , DataHoraEmissao , Competencia , CODVerificacao , CNPJPrestador , CNPJTomador , RazaoSocialNome) values ('" + nfe + "','" + rps + "','" + dis + "','" + valorliquido + "','" + valorservico + "','" + ISSQNRetido + "','" + CODServico + "','" + NFeSub + "','" + DataHoraEmissao + "','" + Competencia + "','" + CODVerificacao + "','" + CNPJPrestador + "','" + CNPJTomador + "','" + RazaoSocialNome + "')";
                         command.CommandText = query;
                         command.ExecuteNonQuery();
                         connection.Close();
                     }
-                    catch (Exception)
+                    catch (Exception err)
                     {
                         connection.Close();
+                        Console.WriteLine(nfe + " - " + err.Message);
                         goto InsertChibatao;
                     }
                     
@@ -293,6 +346,27 @@ Persist Security Info=False;";
                 else
                 {
                     Console.WriteLine("Colocaram um navio no meio da avenida!");
+                }
+            }
+
+            else
+            {
+            InsertWhatever:
+                try
+                {
+                    connection.Open();
+                    OleDbCommand command = new OleDbCommand();
+                    command.Connection = connection;
+                    query = "insert into Notas (NFe, RPS , DiscriminacaodoServico , ValorLiquido , ValorServico , ISSQNRetino , CODServico , NFeSub , DataHoraEmissao , Competencia , CODVerificacao , CNPJPrestador , CNPJTomador , RazaoSocialNome) values ('" + nfe + "','" + rps + "','" + dis + "','" + valorliquido + "','" + valorservico + "','" + ISSQNRetido + "','" + CODServico + "','" + NFeSub + "','" + DataHoraEmissao + "','" + Competencia + "','" + CODVerificacao + "','" + CNPJPrestador + "','" + CNPJTomador + "','" + RazaoSocialNome + "')";
+                    command.CommandText = query;
+                    command.ExecuteNonQuery();
+                    connection.Close();
+                }
+                catch (Exception err)
+                {
+                    connection.Close();
+                    Console.WriteLine(nfe + " - " + dis + " - " + err.Message);
+                    goto InsertWhatever;
                 }
             }
 

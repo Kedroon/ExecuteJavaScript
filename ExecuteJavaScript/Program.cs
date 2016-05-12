@@ -178,7 +178,18 @@ Persist Security Info=False;";
                 }
                 Thread.Sleep(1000);
             }
-            var length = new FileInfo(excelpath).Length;
+            long length;
+            FileLength:
+            try
+            {
+                length = new FileInfo(excelpath).Length;
+            }
+            catch (Exception)
+            {
+
+                goto FileLength;
+            }
+            
             for (var i = 0; i < 30; i++)
             {
                 Thread.Sleep(1000);
@@ -247,7 +258,17 @@ Persist Security Info=False;";
             {
                 //Console.WriteLine(url);
                 var worker = ClientQueue.Take();
-                worker.DownloadStringAsync(url);
+                DownloadString:
+                try
+                {
+                    worker.DownloadStringAsync(url);
+                }
+                catch (Exception)
+                {
+                    goto DownloadString;
+                    
+                }
+               
                 //count++;
                 //Console.WriteLine(count);
             }
@@ -304,7 +325,7 @@ Persist Security Info=False;";
                 }
                 else
                 {
-                    cnpjcpfValidos.Add(false);
+                    cnpjcpfValidos.Add(true);
                 }
 
                 i++;

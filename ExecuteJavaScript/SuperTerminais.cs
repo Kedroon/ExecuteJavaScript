@@ -88,8 +88,9 @@ Persist Security Info=False;";
                 command.ExecuteNonQuery();
                 connection.Close();
             }
-            catch (Exception)
+            catch (Exception err)
             {
+                Console.WriteLine(err.Message);
                 goto InsertSuperTerminais;
             }
             
